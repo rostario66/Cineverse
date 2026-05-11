@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Cineverse.Application.DTOs.Auth
 {
-    public  class RegisterRequest
-    {
-        public string UserName { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-    }
+    public record RegisterRequest(
+        string UserName,
+        string Email,
+        string Password
+    );
+
 }

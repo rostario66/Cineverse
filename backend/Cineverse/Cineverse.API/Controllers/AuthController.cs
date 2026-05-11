@@ -1,4 +1,5 @@
 ﻿using Cineverse.Application.DTOs.Auth;
+using Cineverse.Application.Exceptions;
 using Cineverse.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +24,7 @@ namespace Cineverse.API.Controllers
                 var response = await _authService.RegisterAsync(request, ct);
                 return Ok(response);
             }
-            catch (Exception ex) 
+            catch (ValidationException ex) 
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -37,7 +38,7 @@ namespace Cineverse.API.Controllers
                 var response = await _authService.LoginAsync(request, ct);
                 return Ok(response);
             }
-            catch (Exception ex)
+            catch (NotFoundException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }

@@ -4,11 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Cineverse.Application.DTOs.Auth
+namespace Cineverse.Application.DTOs.Watchlist
 {
-    public record LoginRequest(
-        string Email, 
-        string Password
+    public record AddToWatchlistRequest(
+        int TmdbMovieId
     );
-
 }

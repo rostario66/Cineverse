@@ -1,4 +1,5 @@
 ﻿using Cineverse.Application.Interfaces;
+using Cineverse.Application.Settings;
 using Cineverse.Infrastructure.Data;
 using Cineverse.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,12 +17,26 @@ namespace Cineverse.API
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
+            builder.Services.AddMemoryCache();
 
             builder.Services.AddDbContext<AppDbContext>(options => 
                 options.UseNpgsql(builder.Configuration
                 .GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddScoped<IWatchlistService, WatchlistService>();
+            builder.Services.AddHttpClient<IMovieService, TmdbService>();
+
+            builder.Services.Configure<JwtSettings>(
+                builder.Configuration.GetSection("Jwt"));
+
+            builder.Services.Configure<TmdbSettings>(
+                builder.Configuration.GetSection("Tmdb"));
+            
+            var jwtSettings = builder.Configuration
+                .GetSection("Jwt")
+                .Get<JwtSettings>()!;
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -30,7 +45,7 @@ namespace Cineverse.API
                     {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(
-                            Encoding.UTF8.GetBytes(builder.Configuration.GetSection("Jwt")["Secret"]!)),
+                            Encoding.UTF8.GetBytes(jwtSettings.Secret)),
                         ValidateIssuer = false,
                         ValidateAudience = false
                     };

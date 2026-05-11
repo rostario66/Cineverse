@@ -30,7 +30,10 @@ services:
         Host=postgres;Port=5432;Database=cineverse;
         Username=postgres;Password=${POSTGRES_PASSWORD}
       Tmdb__ApiKey: ${TMDB_API_KEY}
+      Tmdb__BaseUrl: https://api.themoviedb.org/3
+      Tmdb__ImageBaseUrl: https://image.tmdb.org/t/p/w500
       Jwt__Secret: ${JWT_SECRET}
+      Jwt__ExpiryDays: 7
       ASPNETCORE_ENVIRONMENT: Development
     ports:
       - "8080:8080"
