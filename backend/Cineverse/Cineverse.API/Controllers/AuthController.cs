@@ -17,31 +17,19 @@ namespace Cineverse.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterRequest request, CancellationToken ct)
+        public async Task<IActionResult> Register(RegisterRequest request, CancellationToken ct = default)
         {
-            try
-            {
-                var response = await _authService.RegisterAsync(request, ct);
-                return Ok(response);
-            }
-            catch (ValidationException ex) 
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var response = await _authService.RegisterAsync(request, ct);
+
+            return Ok(response);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginRequest request, CancellationToken ct)
-        {
-            try
-            {
-                var response = await _authService.LoginAsync(request, ct);
-                return Ok(response);
-            }
-            catch (NotFoundException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+        public async Task<IActionResult> Login(LoginRequest request, CancellationToken ct = default)
+        {        
+            var response = await _authService.LoginAsync(request, ct);
+            
+            return Ok(response);            
         }
 
 

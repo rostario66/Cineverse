@@ -25,8 +25,6 @@ namespace Cineverse.API.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string query, [FromQuery] int page = 1, CancellationToken ct = default)
         {
-            if (string.IsNullOrWhiteSpace(query))
-                return BadRequest(new { message = "Query cannot be empty" });
 
             var movies = await _movieService.SearchAsync(query, page, ct);
             
@@ -36,14 +34,9 @@ namespace Cineverse.API.Controllers
         [HttpGet("{tmdbId}")]
         public async Task<IActionResult> GetById(int tmdbId, CancellationToken ct = default)
         {
-            var movie = await _movieService.GetByIdAsync(tmdbId, ct);
-
-            if (movie is null)
-                return NotFound(new { message = "Movie is not found" });
+            var movie = await _movieService.GetByIdAsync(tmdbId, ct);         
             
             return Ok(movie);
         }
-
-
     }
 }

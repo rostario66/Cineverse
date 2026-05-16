@@ -1,17 +1,11 @@
 ﻿using Cineverse.Application.DTOs.Movies;
 using Cineverse.Application.Interfaces;
 using Cineverse.Application.Settings;
-using Cineverse.Infrastructure.Data;
 using Cineverse.Infrastructure.ExternalServices.Tmdb;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
+using Cineverse.Application.Exceptions;
 
 namespace Cineverse.Infrastructure.Services
 {
@@ -44,7 +38,9 @@ namespace Cineverse.Infrastructure.Services
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync(ct);
-            var result = JsonSerializer.Deserialize<TmdbGenreListResponse>(content, JsonOptions);
+            var result = JsonSerializer.Deserialize<TmdbGenreListResponse>(content, JsonOptions)
+                ?? throw new Exception("Failed to load genres from TMDB");
+
             var genres = result.Genres.ToDictionary(g => g.Id, g => g.Name);
 
             _cache.Set("tmdb_genres", genres, TimeSpan.FromHours(24));
@@ -62,7 +58,8 @@ namespace Cineverse.Infrastructure.Services
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync(ct);
-            var tmdbResponse = JsonSerializer.Deserialize<TmdbMovieListResponse>(content, JsonOptions);
+            var tmdbResponse = JsonSerializer.Deserialize<TmdbMovieListResponse>(content, JsonOptions)
+                 ?? throw new Exception("Failed to load popular movies from TMDB");
 
             return new MovieSearchResult(
                 Movies: tmdbResponse.Results.Select(m => MapToDto(m, genres)).ToList(),
@@ -75,14 +72,23 @@ namespace Cineverse.Infrastructure.Services
         {
             var genres = await GetGenresAsync(ct);
 
+            if(string.IsNullOrWhiteSpace(query))
+                throw new ValidationException("Query cannot be empty");
+
             var encodedQuery = Uri.EscapeDataString(query);
             var url = $"{_tmdbSettings.BaseUrl}/search/movie?api_key={_tmdbSettings.ApiKey}&query={encodedQuery}&page={page}&language=en-US";
 
             var response = await _httpClient.GetAsync(url, ct);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                throw new NotFoundException($"Movies not found");
+
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync(ct);
-            var tmdbResponse = JsonSerializer.Deserialize<TmdbMovieListResponse>(content, JsonOptions);
+
+            var tmdbResponse = JsonSerializer.Deserialize<TmdbMovieListResponse>(content, JsonOptions)
+                 ?? throw new Exception("Failed to load movies from TMDB");
 
             return new MovieSearchResult(
                 Movies: tmdbResponse.Results.Select(m => MapToDto(m, genres)).ToList(),
@@ -97,10 +103,16 @@ namespace Cineverse.Infrastructure.Services
             var url = $"{_tmdbSettings.BaseUrl}/movie/{tmdbId}?api_key={_tmdbSettings.ApiKey}&language=en-US";
 
             var response = await _httpClient.GetAsync(url, ct);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                throw new NotFoundException($"Movie with id {tmdbId} not found");
+
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync(ct);
-            var movie = JsonSerializer.Deserialize<TmdbMovieDetail>(content, JsonOptions);
+
+            var movie = JsonSerializer.Deserialize<TmdbMovieDetail>(content, JsonOptions)
+                 ?? throw new Exception("Failed to load movie from TMDB");
 
             return new MovieDto(
                 Id: movie.Id,
@@ -113,7 +125,6 @@ namespace Cineverse.Infrastructure.Services
                 VoteAverage: movie.VoteAverage,
                 Genres: movie.Genres.Select(g => g.Name).ToList()
             );
-
         }
 
         private MovieDto MapToDto(TmdbMovie movie, Dictionary<int, string> genres) => new(

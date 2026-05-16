@@ -18,7 +18,7 @@ namespace Cineverse.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetMy(CancellationToken ct)
+        public async Task<IActionResult> GetMy(CancellationToken ct = default)
         {
             var userId = GetUserId();
             var items = await _watchlistService.GetByUserAsync(userId, ct);
@@ -27,7 +27,7 @@ namespace Cineverse.API.Controllers
         }
 
         [HttpGet("watched")]
-        public async Task<IActionResult> GetWatched(CancellationToken ct)
+        public async Task<IActionResult> GetWatched(CancellationToken ct = default)
         {
             var userId = GetUserId();
             var items = await _watchlistService.GetWatchedAsync(userId, ct);
@@ -36,57 +36,28 @@ namespace Cineverse.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(AddToWatchlistRequest request, CancellationToken ct)
+        public async Task<IActionResult> Add(AddToWatchlistRequest request, CancellationToken ct = default)
         {
-            try
-            {
-                var userId = GetUserId();
-                var item = await _watchlistService.AddAsync(userId, request, ct);
-                return Ok(item);
-            }
-            catch (ValidationException ex) 
-            { 
-                return BadRequest(new { message = ex.Message });
-            }
+            var userId = GetUserId();
+            var item = await _watchlistService.AddAsync(userId, request, ct);
+            return Ok(item);
         }
 
         [HttpPatch("{itemId}/watched")]
-        public async Task<IActionResult> MarkAsWatched(Guid itemId, CancellationToken ct)
+        public async Task<IActionResult> MarkAsWatched(Guid itemId, CancellationToken ct = default)
         {
-            try
-            {
-                var userId = GetUserId();
-                await _watchlistService.MarkWatchedAsync(itemId, userId, ct);
+            var userId = GetUserId();
+            await _watchlistService.MarkWatchedAsync(itemId, userId, ct);
 
-                return NoContent();
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return NoContent();
         }
 
         [HttpDelete("{itemId}")]
-        public async Task<IActionResult> Remove(Guid itemId, CancellationToken ct)
+        public async Task<IActionResult> Remove(Guid itemId, CancellationToken ct = default)
         {
-            try
-            {
-                var userId = GetUserId();
-                await _watchlistService.RemoveAsync(itemId, userId, ct);
-                return NoContent();
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var userId = GetUserId();
+            await _watchlistService.RemoveAsync(itemId, userId, ct);
+            return NoContent();
         }
     }
 }

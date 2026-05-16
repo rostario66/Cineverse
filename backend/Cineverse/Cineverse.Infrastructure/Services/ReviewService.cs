@@ -16,7 +16,7 @@ namespace Cineverse.Infrastructure.Services
     {
         private readonly AppDbContext _dbContext;
 
-        public ReviewService(AppDbContext dbContext )
+        public ReviewService(AppDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -71,7 +71,7 @@ namespace Cineverse.Infrastructure.Services
         {
             var review = await _dbContext.Reviews
                 .FirstOrDefaultAsync(r => r.Id == reviewId, ct)
-                ?? throw new NotFoundException("Review was not found");
+                ?? throw new NotFoundException("Review not found");
 
             if (review.UserId != userId)
                 throw new ValidationException("You can only delete your own reviews");

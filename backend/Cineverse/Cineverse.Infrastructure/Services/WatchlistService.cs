@@ -26,7 +26,7 @@ namespace Cineverse.Infrastructure.Services
             var exists = await _dbContext.WatchlistItems.AnyAsync(w => w.UserId == userId && w.TmdbMovieId == request.TmdbMovieId, ct);
 
             if (exists)
-                throw new ValidationException("Movie is already in watchlist");
+                throw new ValidationException("Movie already in watchlist");
 
             var item = new WatchlistItem()
             {
@@ -61,7 +61,7 @@ namespace Cineverse.Infrastructure.Services
         {
             var item = await _dbContext.WatchlistItems
                 .FirstOrDefaultAsync(w => w.Id == itemId, ct)
-                ?? throw new NotFoundException("Watchlist item is not found");
+                ?? throw new NotFoundException("Watchlist item not found");
 
             if (item.UserId != userId)
                 throw new ValidationException("You can only update your own watchlist");
@@ -74,7 +74,7 @@ namespace Cineverse.Infrastructure.Services
         {
             var item = await _dbContext.WatchlistItems
                 .FirstOrDefaultAsync(w => w.Id == itemId, ct)
-                 ?? throw new NotFoundException("Watchlist item is not found");
+                 ?? throw new NotFoundException("Watchlist item not found");
 
             if (item.UserId != userId)
                 throw new ValidationException("You can only update your own watchlist");
