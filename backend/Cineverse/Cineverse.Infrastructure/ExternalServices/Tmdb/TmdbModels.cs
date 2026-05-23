@@ -20,7 +20,7 @@ namespace Cineverse.Infrastructure.ExternalServices.Tmdb
               [property: JsonPropertyName("overview")] string Overview,
               [property: JsonPropertyName("poster_path")] string? PosterPath,
               [property: JsonPropertyName("release_date")] string ReleaseDate,
-              [property: JsonPropertyName("vote_avarage")] double VoteAverage,
+              [property: JsonPropertyName("vote_average")] double VoteAverage,
               [property: JsonPropertyName("genre_ids")] List<int> GenreIds
     );
 
@@ -30,7 +30,7 @@ namespace Cineverse.Infrastructure.ExternalServices.Tmdb
               [property: JsonPropertyName("overview")] string Overview,
               [property: JsonPropertyName("poster_path")] string? PosterPath,
               [property: JsonPropertyName("release_date")] string ReleaseDate,
-              [property: JsonPropertyName("vote_avarage")] double VoteAverage,
+              [property: JsonPropertyName("vote_average")] double VoteAverage,
               [property: JsonPropertyName("genres")] List<TmdbGenre> Genres
     );
 

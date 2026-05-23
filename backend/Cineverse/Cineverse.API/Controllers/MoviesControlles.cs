@@ -25,7 +25,6 @@ namespace Cineverse.API.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string query, [FromQuery] int page = 1, CancellationToken ct = default)
         {
-
             var movies = await _movieService.SearchAsync(query, page, ct);
             
             return Ok(movies);

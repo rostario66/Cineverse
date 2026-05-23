@@ -78,6 +78,29 @@ namespace Cineverse.Infrastructure.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        private static void ValidateRegistration(RegisterRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.UserName) ||
+                request.UserName.Length < 3 ||
+                request.UserName.Length < 20)
+                throw new ValidationException("Username must be 3-20 characters");
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(request.UserName, @"^[a-zA-Z0-9_]+$"))
+                throw new ValidationException("Username can only contain letters, numbers and underscores");
+
+            if (!System.Text.RegularExpressions.Regex.IsMatch(request.Email, @"^[^\s@]+@[^\s@]+\.[^\s@]+$"))
+                throw new ValidationException("Invalid email format");
+
+            if (request.Password.Length < 8)
+                throw new ValidationException("Password must be at least 8 characters");
+            if (!request.Password.Any(char.IsUpper))
+                throw new ValidationException("Password must contain at least one uppercase letter");
+            if (!request.Password.Any(char.IsLower))
+                throw new ValidationException("Password must contain at least one lowercase letter");
+            if (!request.Password.Any(char.IsDigit))
+                throw new ValidationException("Password must contain at least one number");
+        }
     }
 
 }

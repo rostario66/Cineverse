@@ -23,8 +23,8 @@ namespace Cineverse.Infrastructure.Services
 
         public async Task<ReviewDto> CreateAsync(Guid userId, CreateReviewRequest request, CancellationToken ct = default)
         {
-            if (request.Rating < 1 || request.Rating > 5)
-                throw new ValidationException("Rating must be between 1 and 5");
+            if (request.Rating < 0.5 || request.Rating > 10 || request.Rating % 0.5 != 0)
+                throw new ValidationException("Rating must be between 1 and 10 with step 0.5");
 
             var exists = await _dbContext.Reviews.AnyAsync(r => r.UserId == userId && r.TmdbMovieId == request.TmdbMovieId, ct);
 

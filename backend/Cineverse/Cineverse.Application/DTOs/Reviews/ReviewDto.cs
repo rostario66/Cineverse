@@ -11,7 +11,7 @@ namespace Cineverse.Application.DTOs.Reviews
         Guid UserId,
         string UserName,
         int TmdbMovieId,
-        int Rating,
+        double Rating,
         string Content,
         DateTime CreatedAt
     );

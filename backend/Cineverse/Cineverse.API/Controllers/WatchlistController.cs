@@ -40,6 +40,7 @@ namespace Cineverse.API.Controllers
         {
             var userId = GetUserId();
             var item = await _watchlistService.AddAsync(userId, request, ct);
+
             return Ok(item);
         }
 
@@ -57,6 +58,7 @@ namespace Cineverse.API.Controllers
         {
             var userId = GetUserId();
             await _watchlistService.RemoveAsync(itemId, userId, ct);
+
             return NoContent();
         }
     }

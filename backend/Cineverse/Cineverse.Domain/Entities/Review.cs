@@ -11,7 +11,7 @@ namespace Cineverse.Domain.Entities
         public Guid Id { get; set; } = Guid.NewGuid();
         public Guid UserId { get; set; } 
         public int TmdbMovieId { get; set; }
-        public int Rating { get; set; }
+        public double Rating { get; set; }
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
