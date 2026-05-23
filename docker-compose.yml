@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: cineverse_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: cineverse
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # healthcheck нужен чтобы бэкенд не стартовал раньше чем БД готова
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend     # контекст — корень проекта (нужны все 4 проекта)
+      dockerfile: Dockerfile
+    container_name: cineverse_backend
+    depends_on:
+      postgres:
+        condition: service_healthy   # ждём healthcheck, не просто старт
+    environment:
+      ConnectionStrings__DefaultConnection: >
+        Host=postgres;Port=5432;Database=cineverse;
+        Username=postgres;Password=${POSTGRES_PASSWORD}
+      Tmdb__ApiKey: ${TMDB_API_KEY}
+      Tmdb__BaseUrl: https://api.themoviedb.org/3
+      Tmdb__ImageBaseUrl: https://image.tmdb.org/t/p/w500
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__ExpiryDays: 7
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cineverse_frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend/src:/app/src   # hot reload — изменения видны без пересборки
+    depends_on:
+      - backend
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: cineverse_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres-data:
