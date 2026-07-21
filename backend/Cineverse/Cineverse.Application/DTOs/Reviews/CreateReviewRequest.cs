@@ -9,6 +9,6 @@ namespace Cineverse.Application.DTOs.Reviews
     public record CreateReviewRequest(
         int TmdbMovieId,
         double Rating,
-        string Content
+        string? Content
     );    
 }

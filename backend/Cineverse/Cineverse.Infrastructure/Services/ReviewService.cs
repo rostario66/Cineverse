@@ -36,7 +36,7 @@ namespace Cineverse.Infrastructure.Services
                 UserId = userId,
                 TmdbMovieId = request.TmdbMovieId,
                 Rating = request.Rating,
-                Content = request.Content
+                Content = request.Content ?? string.Empty
             };
 
             _dbContext.Reviews.Add(review);

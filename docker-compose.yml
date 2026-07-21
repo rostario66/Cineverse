@@ -24,7 +24,7 @@ services:
     container_name: cineverse_backend
     depends_on:
       postgres:
-        condition: service_healthy   # ждём healthcheck, не просто старт
+        condition: service_healthy   
     environment:
       ConnectionStrings__DefaultConnection: >
         Host=postgres;Port=5432;Database=cineverse;

@@ -16,6 +16,7 @@ namespace Cineverse.Infrastructure.Data
         public DbSet<Review> Reviews => Set<Review>();
         public DbSet<WatchlistItem> WatchlistItems => Set<WatchlistItem>();
         public DbSet<UserFollower> UserFollowers => Set<UserFollower>();
+        public DbSet<MovieLike> MovieLikes => Set<MovieLike>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +46,10 @@ namespace Cineverse.Infrastructure.Data
             modelBuilder.Entity<Review>()
                 .HasIndex(r => new { r.UserId, r.TmdbMovieId })
                 .IsUnique();
-        }
 
+            modelBuilder.Entity<MovieLike>()
+                .HasIndex(l => new { l.UserId, l.TmdbMovieId })
+                .IsUnique();
+        }
     }
 }

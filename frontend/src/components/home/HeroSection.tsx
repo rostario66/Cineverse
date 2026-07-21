@@ -1,14 +1,38 @@
 import type { Movie } from '../../types';
-import { Play, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Play, Plus, Check } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import CircleRating from '../ui/CircleRating';
+import { useMovieStatus } from '../../hooks/useMovieStatus';
+import { useAuth } from '../../context/AuthContext';
+import { watchlistApi } from '../../api/watchlist';
 
 interface HeroSectionProps {
     movie: Movie;
-    onAddToWatchlist: (movieId: number) => void;
 }
 
-export default function HeroSection({ movie, onAddToWatchlist }: HeroSectionProps) {
+export default function HeroSection({ movie }: HeroSectionProps) {
+    const navigate = useNavigate();
+    const { isAuthenticated } = useAuth();
+    const { inWatchlist, setInWatchlist } = useMovieStatus(movie.id);
+
+    const handleToggleWatchlist = async () => {
+        if (!isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+        try {
+            if (inWatchlist) {
+                await watchlistApi.removeByMovieId(movie.id);
+                setInWatchlist(false);
+            } else {
+                await watchlistApi.add(movie.id);
+                setInWatchlist(true);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     return (
         <div className="relative w-full h-125 overflow-hidden">
             {movie.posterPath && (
@@ -33,7 +57,6 @@ export default function HeroSection({ movie, onAddToWatchlist }: HeroSectionProp
                     {movie.title}
                 </h1>
 
-                {/* Метаданные с CircleRating вместо звезды */}
                 <div className="flex items-center gap-4 mb-4 text-sm text-gray-300">
                     <span>{new Date(movie.releaseDate).getFullYear()}</span>
                     <span className="w-1 h-1 bg-gray-500 rounded-full" />
@@ -60,11 +83,15 @@ export default function HeroSection({ movie, onAddToWatchlist }: HeroSectionProp
                         Watch Trailer
                     </Link>
                     <button
-                        onClick={() => onAddToWatchlist(movie.id)}
-                        className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all border border-white/10"
+                        onClick={handleToggleWatchlist}
+                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all border ${
+                            inWatchlist
+                                ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-400'
+                                : 'bg-white/10 hover:bg-white/20 text-white border-white/10'
+                        }`}
                     >
-                        <Plus size={16} />
-                        Add to Watchlist
+                        {inWatchlist ? <Check size={16} /> : <Plus size={16} />}
+                        {inWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
                     </button>
                 </div>
             </div>

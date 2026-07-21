@@ -35,6 +35,14 @@ namespace Cineverse.API.Controllers
             return Ok(items);
         }
 
+        [HttpGet("{tmdbMovieId}/status")]
+        public async Task<IActionResult> CheckStatus(int tmdbMovieId, CancellationToken ct)
+        {
+            var userId = GetUserId();
+            var isInWatchlist = await _watchlistService.IsInWatchlistAsync(userId, tmdbMovieId, ct);
+            return Ok(new { isInWatchlist });
+        }
+
         [HttpPost]
         public async Task<IActionResult> Add(AddToWatchlistRequest request, CancellationToken ct = default)
         {
@@ -59,6 +67,14 @@ namespace Cineverse.API.Controllers
             var userId = GetUserId();
             await _watchlistService.RemoveAsync(itemId, userId, ct);
 
+            return NoContent();
+        }
+
+        [HttpDelete("movie/{tmdbMovieId}")]
+        public async Task<IActionResult> RemoveByMovieId(int tmdbMovieId, CancellationToken ct)
+        {
+            var userId = GetUserId();
+            await _watchlistService.RemoveByMovieIdAsync(userId, tmdbMovieId, ct);
             return NoContent();
         }
     }

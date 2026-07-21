@@ -46,7 +46,8 @@ namespace Cineverse.API
             builder.Services.AddScoped<IReviewService, ReviewService>();
             builder.Services.AddScoped<IWatchlistService, WatchlistService>();
             builder.Services.AddScoped<IUserService, UserService>();
-            
+            builder.Services.AddScoped<ILikeService, LikeService>();
+
             builder.Services.AddHttpClient<IMovieService, TmdbService>();       
 
             builder.Services.Configure<JwtSettings>(

@@ -6,6 +6,8 @@ import Movie from './pages/Movie';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Trending from './pages/Trending';
+import Search from './pages/Search';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -20,6 +22,7 @@ export default function App() {
                     {/* Страницы с Layout */}
                     <Route element={<Layout />}>
                         <Route path="/" element={<Home />} />
+                        <Route path="/search" element={<Search />} />
                         <Route path="/movies/:id" element={<Movie />} />
                         <Route
                             path="/profile"
@@ -29,6 +32,7 @@ export default function App() {
                                 </ProtectedRoute>
                             }
                         />
+                        <Route path="/trending" element={<Trending />} />
                     </Route>
                 </Routes>
             </AuthProvider>

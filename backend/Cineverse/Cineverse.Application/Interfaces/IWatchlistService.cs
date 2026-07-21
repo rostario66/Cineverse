@@ -12,7 +12,9 @@ namespace Cineverse.Application.Interfaces
         Task<WatchlistItemDto> AddAsync(Guid userId, AddToWatchlistRequest request, CancellationToken ct = default);
         Task<List<WatchlistItemDto>> GetByUserAsync(Guid userId, CancellationToken ct = default);
         Task<List<WatchlistItemDto>> GetWatchedAsync(Guid userId, CancellationToken ct = default);
+        Task<bool> IsInWatchlistAsync(Guid userId, int tmdbMovieId, CancellationToken ct = default);
         Task MarkWatchedAsync(Guid itemId, Guid userId, CancellationToken ct = default);
         Task RemoveAsync(Guid itemId, Guid userId, CancellationToken ct = default);
+        Task RemoveByMovieIdAsync(Guid userId, int tmdbMovieId, CancellationToken ct = default);
     }
 }

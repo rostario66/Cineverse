@@ -20,20 +20,20 @@ namespace Cineverse.Infrastructure.Services
             PropertyNameCaseInsensitive = true
         };
 
-        public TmdbService(HttpClient httpClient, IOptions<TmdbSettings> tmdbSettings, IMemoryCache cache) 
-        { 
+        public TmdbService(HttpClient httpClient, IOptions<TmdbSettings> tmdbSettings, IMemoryCache cache)
+        {
             _httpClient = httpClient;
             _tmdbSettings = tmdbSettings.Value;
             _cache = cache;
         }
 
-        private async Task<Dictionary<int, string>> GetGenresAsync(CancellationToken ct)
+        private async Task<Dictionary<int, string>> GetGenresDictAsync(CancellationToken ct)
         {
-            if (_cache.TryGetValue("tmdb_genres", out Dictionary<int, string?> cached)) 
+            if (_cache.TryGetValue("tmdb_genres", out Dictionary<int, string?> cached))
                 return cached!;
-            
+
             var url = $"{_tmdbSettings.BaseUrl}/genre/movie/list?api_key={_tmdbSettings.ApiKey}&language=en-US";
-            
+
             var response = await _httpClient.GetAsync(url, ct);
             response.EnsureSuccessStatusCode();
 
@@ -48,11 +48,21 @@ namespace Cineverse.Infrastructure.Services
             return genres;
         }
 
-        public async Task<MovieSearchResult> GetPopularAsync(int page = 1, CancellationToken ct = default)
+        public async Task<List<GenreDto>> GetGenresAsync(CancellationToken ct = default)
         {
-            var genres = await GetGenresAsync(ct);
+            var dict = await GetGenresDictAsync(ct);
+            return dict
+                .Select(kv => new GenreDto(kv.Key, kv.Value))
+                .ToList();
+        }
 
-            var url = $"{_tmdbSettings.BaseUrl}/movie/popular?api_key={_tmdbSettings.ApiKey}&page={page}&language=en-US";
+        public async Task<MovieSearchResult> GetPopularAsync(int page = 1, int? genreId = null, CancellationToken ct = default)
+        {
+            var genres = await GetGenresDictAsync(ct);
+
+            var url = genreId.HasValue
+                ? $"{_tmdbSettings.BaseUrl}/discover/movie?api_key={_tmdbSettings.ApiKey}&page={page}&sort_by=popularity.desc&with_genres={genreId}&language=en-US"
+                : $"{_tmdbSettings.BaseUrl}/movie/popular?api_key={_tmdbSettings.ApiKey}&page={page}&language=en-US";
 
             var response = await _httpClient.GetAsync(url, ct);
             response.EnsureSuccessStatusCode();
@@ -70,9 +80,9 @@ namespace Cineverse.Infrastructure.Services
         }
         public async Task<MovieSearchResult> SearchAsync(string query, int page = 1, CancellationToken ct = default)
         {
-            var genres = await GetGenresAsync(ct);
+            var genres = await GetGenresDictAsync(ct);
 
-            if(string.IsNullOrWhiteSpace(query))
+            if (string.IsNullOrWhiteSpace(query))
                 throw new ValidationException("Query cannot be empty");
 
             var encodedQuery = Uri.EscapeDataString(query);
@@ -100,7 +110,8 @@ namespace Cineverse.Infrastructure.Services
 
         public async Task<MovieDto?> GetByIdAsync(int tmdbId, CancellationToken ct = default)
         {
-            var url = $"{_tmdbSettings.BaseUrl}/movie/{tmdbId}?api_key={_tmdbSettings.ApiKey}&language=en-US";
+            var url = $"{_tmdbSettings.BaseUrl}/movie/{tmdbId}?api_key={_tmdbSettings.ApiKey}" +
+                $"&append_to_response=credits,similar&language=en-US";
 
             var response = await _httpClient.GetAsync(url, ct);
 
@@ -114,16 +125,46 @@ namespace Cineverse.Infrastructure.Services
             var movie = JsonSerializer.Deserialize<TmdbMovieDetail>(content, JsonOptions)
                  ?? throw new Exception("Failed to load movie from TMDB");
 
+            var directors = movie.Credits?.Crew
+                .Where(c => c.Job == "Director")
+                .Select(c => c.Name)
+                .ToList() ?? new List<string>();
+
+            var cast = movie.Credits?.Cast
+                .Take(10)
+                .Select(c => new CastMemberDto(
+                    Id: c.Id,
+                    Name: c.Name,
+                    Character: c.Character,
+                    ProfilePath: c.ProfilePath != null
+                        ? $"{_tmdbSettings.ImageBaseUrl}{c.ProfilePath}"
+                        : string.Empty
+                ))
+                .ToList() ?? new List<CastMemberDto>();
+
+            var genres = await GetGenresDictAsync(ct);
+            var similar = movie.Similar?.Results
+                .Take(10)
+                .Select(m => MapToDto(m, genres))
+                .ToList() ?? new List<MovieDto>();
+
             return new MovieDto(
                 Id: movie.Id,
                 Title: movie.Title,
                 Overview: movie.Overview,
                 PosterPath: movie.PosterPath != null
-                ? $"{_tmdbSettings.ImageBaseUrl}{movie.PosterPath}"
-                : string.Empty,
+                    ? $"{_tmdbSettings.ImageBaseUrl}{movie.PosterPath}"
+                    : string.Empty,
+                BackdropPath: movie.BackdropPath != null
+                    ? $"https://image.tmdb.org/t/p/original{movie.BackdropPath}"
+                    : string.Empty,
                 ReleaseDate: movie.ReleaseDate,
                 VoteAverage: movie.VoteAverage,
-                Genres: movie.Genres.Select(g => g.Name).ToList()
+                Runtime: movie.Runtime ?? 0,
+                Genres: movie.Genres.Select(g => g.Name).ToList(),
+                Directors: directors,
+                Cast: cast,
+                Similar: similar
             );
         }
 
@@ -132,14 +173,18 @@ namespace Cineverse.Infrastructure.Services
             Title: movie.Title,
             Overview: movie.Overview,
             PosterPath: movie.PosterPath != null
-            ? $"{_tmdbSettings.ImageBaseUrl}{movie.PosterPath}"
-            : string.Empty,
+                ? $"{_tmdbSettings.ImageBaseUrl}{movie.PosterPath}"
+                : string.Empty,
+            BackdropPath: string.Empty,
             ReleaseDate: movie.ReleaseDate,
             VoteAverage: movie.VoteAverage,
+            Runtime: 0,
             Genres: movie.GenreIds
                 .Where(id => genres.ContainsKey(id))
                 .Select(id => genres[id])
-                .ToList()
-        );
+                .ToList(),
+            Directors: new List<string>(),
+            Cast: new List<CastMemberDto>(),
+            Similar: new List<MovieDto>());
     }
 }

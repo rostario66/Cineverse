@@ -57,6 +57,12 @@ namespace Cineverse.Infrastructure.Services
                 .ToListAsync(ct);
         }
 
+        public async Task<bool> IsInWatchlistAsync(Guid userId, int tmdbMovieId, CancellationToken ct = default)
+        {
+            return await _dbContext.WatchlistItems.AnyAsync(
+                w => w.UserId == userId && w.TmdbMovieId == tmdbMovieId, ct);
+        }
+        
         public async Task MarkWatchedAsync(Guid itemId, Guid userId, CancellationToken ct = default)
         {
             var item = await _dbContext.WatchlistItems
@@ -80,6 +86,16 @@ namespace Cineverse.Infrastructure.Services
                 throw new ValidationException("You can only update your own watchlist");
 
             _dbContext.Remove(item);
+            await _dbContext.SaveChangesAsync(ct);
+        }
+
+        public async Task RemoveByMovieIdAsync(Guid userId, int tmdbMovieId, CancellationToken ct = default)
+        {
+            var item = await _dbContext.WatchlistItems
+                .FirstOrDefaultAsync(w => w.UserId == userId && w.TmdbMovieId == tmdbMovieId, ct)
+                ?? throw new NotFoundException("Movie not in watchlist");
+
+            _dbContext.WatchlistItems.Remove(item);
             await _dbContext.SaveChangesAsync(ct);
         }
 

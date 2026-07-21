@@ -10,7 +10,6 @@ import {
     PenSquare,
     Settings,
     HelpCircle,
-    LogOut,
 } from 'lucide-react';
 
 const navItems = [
@@ -29,7 +28,7 @@ const bottomItems = [
 
 export default function Sidebar() {
     const location = useLocation();
-    const { isAuthenticated, logout } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     const isActive = (path: string) => location.pathname === path;
 
@@ -61,7 +60,7 @@ export default function Sidebar() {
                 ))}
             </nav>
 
-            {/* Write a Review — только для авторизованных */}
+            {/* Write a Review */}
             {isAuthenticated && (
                 <div className="px-4 py-4">
                     <Link
@@ -86,32 +85,6 @@ export default function Sidebar() {
                         <span>{label}</span>
                     </Link>
                 ))}
-
-                {/* Авторизация / Выход */}
-                {isAuthenticated ? (
-                    <button
-                        onClick={logout}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-400 hover:text-red-400 hover:bg-white/5 transition-all w-full"
-                    >
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                    </button>
-                ) : (
-                    <div className="pt-2 space-y-2">
-                        <Link
-                            to="/login"
-                            className="flex items-center justify-center w-full bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all border border-white/10"
-                        >
-                            Sign In
-                        </Link>
-                        <Link
-                            to="/register"
-                            className="flex items-center justify-center w-full bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2 rounded-lg text-sm font-semibold transition-all"
-                        >
-                            Sign Up
-                        </Link>
-                    </div>
-                )}
             </div>
         </aside>
     );

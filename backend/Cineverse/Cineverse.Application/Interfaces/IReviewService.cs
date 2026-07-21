@@ -13,5 +13,6 @@ namespace Cineverse.Application.Interfaces
         Task<List<ReviewDto>> GetByMovieAsync(int tmdbMovieId, CancellationToken ct);
         Task<List<ReviewDto>> GetByUserAsync(Guid userId, CancellationToken ct = default);
         Task DeleteAsync(Guid reviewId, Guid userId, CancellationToken ct = default);
+
     }
 }

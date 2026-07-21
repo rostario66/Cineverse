@@ -3,9 +3,21 @@ export interface Movie {
     title: string;
     overview: string;
     posterPath: string;
+    backdropPath: string;
     releaseDate: string;
     voteAverage: number;
+    runtime: number,
     genres: string[];
+    directors: string[];
+    cast: CastMember[];
+    similar: Movie[];
+}
+
+export interface CastMember {
+    id: number;
+    name: string;
+    character: string;
+    profilePath: string;
 }
 
 export interface MovieSearchResult {
@@ -48,4 +60,9 @@ export interface AuthResponse {
     token: string;
     userName: string;
     email: string;
+}
+
+export interface Genre {
+    id: number;
+    name: string;
 }

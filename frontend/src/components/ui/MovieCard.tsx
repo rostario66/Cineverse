@@ -24,7 +24,6 @@ export default function MovieCard({ movie, size = 'md' }: MovieCardProps) {
                         className="w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-105"
                     />
                 ) : (
-                    // Плейсхолдер если нет постера
                     <div className="w-full h-full bg-white/5 flex items-center justify-center">
                         <span className="text-gray-600 text-xs">No poster</span>
                     </div>

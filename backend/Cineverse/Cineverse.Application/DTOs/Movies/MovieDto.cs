@@ -11,10 +11,20 @@ namespace Cineverse.Application.DTOs.Movies
         string Title,
         string Overview,
         string PosterPath,
+        string BackdropPath,
         string ReleaseDate,
         double VoteAverage,
-        List<string> Genres
+        int Runtime,
+        List<string> Genres,
+        List<string> Directors,
+        List<CastMemberDto> Cast,
+        List<MovieDto> Similar
     );
 
-   
+    public record CastMemberDto(
+        int Id,
+        string Name,
+        string Character,
+        string ProfilePath
+    );
 }
